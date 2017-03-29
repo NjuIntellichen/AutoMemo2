@@ -23,11 +23,10 @@ abstract public class BaseActivity extends AppCompatActivity implements Navigati
     }
 
     protected void setToolBar(int viewId){
-//        TODO
-//        if(!User.isLogined()){
-//            Intent intent = new Intent(BaseActivity.this, LoginActivity.class);
-//            startActivity(intent);
-//        }
+        if(!User.isLogined()){
+            Intent intent = new Intent(BaseActivity.this, LoginActivity.class);
+            startActivity(intent);
+        }
         setContentView(viewId);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();

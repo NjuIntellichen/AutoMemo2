@@ -8,10 +8,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import imagecup.nju.intellichens.automemo.R;
+import imagecup.nju.intellichens.automemo.util.HttpConnector;
 import imagecup.nju.intellichens.automemo.util.User;
 
 public class RecordActivity extends BaseActivity {
@@ -22,14 +27,8 @@ public class RecordActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         this.setToolBar(R.layout.activity_record);
 
-        Intent intent = getIntent();
-        if(intent.hasExtra("team")){
-            String team = intent.getStringExtra("team");
-            records = searchTeamRecord(team);
-        }else{
-            String user = User.getId();
-            records = searchUserRecord(user);
-        }
+        String user = User.getId();
+        records = searchUserRecord(user);
         LinearLayout contentLl  = (LinearLayout) findViewById(R.id. ll_content );
         createContentView(contentLl);
     }
@@ -58,18 +57,17 @@ public class RecordActivity extends BaseActivity {
         }
     }
 
-    private List<RowItem> searchTeamRecord(String id){
-        //TODO Team Record
-        return null;
-    }
-
     private List<RowItem> searchUserRecord(String id){
+        JSONArray array = (JSONArray)HttpConnector.get("record/user/" + id, null);
         List<RowItem> tmp = new ArrayList<RowItem>();
-        tmp.add(new RowItem("123456", "2017.01.01 18:30:00", "123"));
-        tmp.add(new RowItem("123456", "2017.01.01 18:30:00", "123"));
-        tmp.add(new RowItem("123456", "2017.01.01 18:30:00", "123"));
-        tmp.add(new RowItem("123456", "2017.01.01 18:30:00", "123"));
-        //TODO User Record
+        for (int i = 0; i < array.length(); i++){
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                tmp.add(new RowItem(obj.getString("record_name"), obj.getString("time"), obj.getString("rid")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         return tmp;
     }
 

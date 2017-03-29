@@ -8,10 +8,16 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import imagecup.nju.intellichens.automemo.R;
+import imagecup.nju.intellichens.automemo.util.HttpConnector;
+import imagecup.nju.intellichens.automemo.util.User;
 
 public class MyTeamActivity extends BaseActivity{
     int index;
@@ -20,20 +26,30 @@ public class MyTeamActivity extends BaseActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.setToolBar(R.layout.activity_my_team);
 
-        //TODO get all teams of user as a leader
+        this.setToolBar(R.layout.activity_my_team);
         teams  =  new ArrayList<RowItem>();
-        teams .add(new RowItem("Hani", "111111"));
-        teams .add(new RowItem("Faker", "222222"));
+        JSONArray array = (JSONArray) HttpConnector.get("group/get/my/" + User.getId(), null);
+        for (int i = 0; i < array.length(); i++){
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                teams .add(new RowItem(obj.getString("group_name"), obj.getString("group_id")));
+            } catch (JSONException e) {
+            }
+        }
         LinearLayout contentLl  = (LinearLayout) findViewById(R.id. content_leader );
 
         createContentView (contentLl);
 
-        //TODO get all teams of user as a member
         teams  =  new ArrayList<RowItem>();
-        teams .add(new RowItem("JY", "111111"));
-        teams .add(new RowItem("Moistor", "222222"));
+        array = (JSONArray) HttpConnector.get("group/get/join/" + User.getId(), null);
+        for (int i = 0; i < array.length(); i++){
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                teams .add(new RowItem(obj.getString("group_name"), obj.getString("group_id")));
+            } catch (JSONException e) {
+            }
+        }
         contentLl  = (LinearLayout) findViewById(R.id. content_member );
 
         createContentView (contentLl);

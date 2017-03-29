@@ -8,15 +8,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import imagecup.nju.intellichens.automemo.R;
+import imagecup.nju.intellichens.automemo.util.HttpConnector;
 
-public class TeamActivity extends BaseActivity {
+public class TeamActivity extends BaseActivity implements View.OnClickListener {
     private ExpandableListView expandableListView;
 
     private List<String> group_list;
@@ -25,11 +33,36 @@ public class TeamActivity extends BaseActivity {
 
     private MyExpandableListViewAdapter adapter;
 
+    private Button agree_button;
+
+    private Button reject_button;
+
+    private String gid;
+
+    private String aid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setToolBar(R.layout.activity_team);
         this.setSampleData();
+
+        Intent intent = getIntent();
+        if(intent.hasExtra("id")){
+            gid = intent.getStringExtra("id");
+            Button button = (Button)findViewById(R.id.create_team_button);
+            button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    Intent intent = new Intent(TeamActivity.this, MainActivity.class);
+                    intent.putExtra("team", TeamActivity.this.gid);
+                    startActivity(intent);
+                }
+            });
+        }
+        agree_button = (Button)findViewById(R.id.agree_button);
+        agree_button.setOnClickListener(this);
+        reject_button = (Button)findViewById(R.id.reject_button);
+        reject_button.setOnClickListener(this);
     }
 
     private void setSampleData(){
@@ -37,9 +70,9 @@ public class TeamActivity extends BaseActivity {
         group_list.add("Member");
         group_list.add("Record");
 
-        List<RowItem> members = this.getTeamMembers("");
-        List<RowItem> records = this.getTeamRecords("");
-        List<RowItem> application = this.getTeamApplications("");
+        List<RowItem> members = this.getTeamMembers(gid);
+        List<RowItem> records = this.getTeamRecords(gid);
+        List<RowItem> application = this.getTeamApplications(gid);
         item_list = new ArrayList<List<RowItem>>();
         item_list.add(members);
         item_list.add(records);
@@ -74,7 +107,9 @@ public class TeamActivity extends BaseActivity {
                     intent.putExtra("id", item_list.get(groupPosition).get(childPosition).id);
                     startActivity(intent);
                 }else if(groupPosition == 2){
-                    //TODO permit the application
+                    aid = item_list.get(groupPosition).get(childPosition).id;
+                    agree_button.setVisibility(View.VISIBLE);
+                    reject_button.setVisibility(View.VISIBLE);
                 }
                 return false;
             }
@@ -84,28 +119,57 @@ public class TeamActivity extends BaseActivity {
         expandableListView.setAdapter(adapter);
     }
 
+    public void onClick(View v) {
+        Map<String, String> paras = new HashMap<>();
+        paras.put("aid", aid);
+        if(v.getId() == R.id.agree_button){
+            paras.put("type", "1");
+        }else if(v.getId() == R.id.reject_button){
+            paras.put("type", "-1");
+        }
+        HttpConnector.post("group/doApply", paras);
+        Intent intent = new Intent(TeamActivity.this, TeamActivity.class);
+        intent.putExtra("id", gid);
+        startActivity(intent);
+    }
+
     private List<RowItem> getTeamMembers(String id){
-        //TODO get the team member list with team id
+        JSONArray array = (JSONArray) HttpConnector.get("group/get/user/" + id, null);
         List<RowItem> item_lt = new ArrayList<RowItem>();
-        item_lt.add(new RowItem("Member 1", "1"));
-        item_lt.add(new RowItem("Member 2", "2"));
-        item_lt.add(new RowItem("Member 3", "3"));
-        item_lt.add(new RowItem("Member 4", "4"));
+        for(int i = 0; i < array.length(); i++){
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                item_lt.add(new RowItem(obj.getString("user_name"), obj.getString("uid")));
+            } catch (JSONException e) {
+            }
+        }
         return item_lt;
     }
 
     private List<RowItem> getTeamRecords(String id){
-        //TODO get the team record list with team id
+        JSONArray array = (JSONArray) HttpConnector.get("record/group/" + id, null);
         List<RowItem> item_lt = new ArrayList<RowItem>();
-        item_lt.add(new RowItem("Record 1", "1", "2016.01.01.10:30:00"));
-        item_lt.add(new RowItem("Record 2", "2", "2016.01.01.10:40:00"));
-        item_lt.add(new RowItem("Record 3", "3", "2016.01.01.10:50:00"));
+        for(int i = 0; i < array.length(); i++){
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                item_lt.add(new RowItem(obj.getString("record_name"), obj.getString("rid"), obj.getString("time")));
+            } catch (JSONException e) {
+            }
+        }
         return item_lt;
     }
 
     private List<RowItem> getTeamApplications(String id){
-        //TODO get the team application list with team id, null if the user is not the team leader.
-        return null;
+        JSONArray array = (JSONArray) HttpConnector.get("group/get/apply/" + id, null);
+        List<RowItem> item_lt = new ArrayList<RowItem>();
+        for(int i = 0; i < array.length(); i++){
+            try {
+                JSONObject obj = array.getJSONObject(i);
+                item_lt.add(new RowItem(obj.getString("user_name"), obj.getString("aid")));
+            } catch (JSONException e) {
+            }
+        }
+        return item_lt;
     }
 
     class MyExpandableListViewAdapter extends BaseExpandableListAdapter{

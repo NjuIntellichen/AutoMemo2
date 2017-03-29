@@ -74,8 +74,10 @@ public class AudioRecorder {
     /**
      * 创建录音对象
      */
-    public void createAudio(int audioSource, int sampleRateInHz, int channelConfig, int audioFormat) {
-        JSONObject result = (JSONObject)HttpConnector.post("record/ready", null);
+    public void createAudio(int audioSource, int sampleRateInHz, int channelConfig, int audioFormat, String gid) {
+        Map<String, String> paras = new HashMap<>();
+        paras.put("gid", gid);
+        JSONObject result = (JSONObject)HttpConnector.post("record/ready", paras);
         try {
             recordID = result.getString("res");
         } catch (JSONException e) {
@@ -97,8 +99,8 @@ public class AudioRecorder {
      * 创建默认的录音对象
      *
      */
-    public void createDefaultAudio() {
-        this.createAudio(AUDIO_INPUT, AUDIO_SAMPLE_RATE, AUDIO_CHANNEL, AUDIO_ENCODING);
+    public void createDefaultAudio(String gid) {
+        this.createAudio(AUDIO_INPUT, AUDIO_SAMPLE_RATE, AUDIO_CHANNEL, AUDIO_ENCODING, gid);
     }
     /**
      * 开始录音
@@ -140,9 +142,8 @@ public class AudioRecorder {
      * 取消录音
      */
     public boolean cancel() {
-        //TODO
         Map<String, String> paras = new HashMap<>();
-        paras.put("id", recordID);
+        paras.put("recordId", recordID);
         JSONObject result = (JSONObject)HttpConnector.post("record/cancel", paras);
         int res;
         try {
@@ -165,11 +166,9 @@ public class AudioRecorder {
      * @return
      */
     public String analysis() {
-        //TODO
         Map<String, String> paras = new HashMap<>();
-        paras.put("id", recordID);
-        paras.put("flag", recordID);
-        HttpConnector.post("record/finish", paras);
+        paras.put("recordId", recordID);
+        HttpConnector.post("speech/stop", paras);
         return recordID;
     }
 

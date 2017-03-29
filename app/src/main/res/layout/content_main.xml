@@ -8,7 +8,16 @@
     tools:context="imagecup.nju.intellichens.automemo.activity.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
+    <ProgressBar
+        android:id="@+id/analysis_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
     <LinearLayout
+        android:id="@+id/analysis_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
@@ -24,10 +33,8 @@
                 android:id="@+id/record_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Prepare to record."
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:textSize="15dp"
+                android:text="Please select a team or history before recording" />
         </LinearLayout>
 
         <LinearLayout
@@ -55,22 +62,22 @@
             android:layout_marginTop="150dp">
 
             <Button
-                android:id="@+id/analyze_button"
+                android:id="@+id/left_button"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Analyze"
+                android:text="Team"
                 android:visibility="visible"
                 android:layout_marginRight="10dp"
                 android:background="@color/colorButton2"
                 android:textColor="@android:color/white" />
 
             <Button
-                android:id="@+id/reset_button"
+                android:id="@+id/right_button"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Reset"
+                android:text="History"
                 android:visibility="visible"
                 android:layout_marginLeft="10dp"
                 android:background="@color/colorButton"
